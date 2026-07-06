@@ -7,7 +7,8 @@ import cookieParser from "cookie-parser";
 import config from "./config";
 import { notFound } from "./middleware/notFound";
 import { categoryRoutes } from "./modules/category/category.route";
-import { landlordPropertiesRoutes } from "./modules/property/property.route";
+import { propertiesRoutes } from "./modules/property/property.route";
+
 
 const app:Application = express();
 
@@ -27,7 +28,7 @@ app.use(cookieParser());
 // using route middleware
 app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
-app.use("/api/landlord", landlordPropertiesRoutes);
+app.use("/api/properties", propertiesRoutes);
 
 
 // root route

@@ -1,8 +1,9 @@
 import httpStatus from "http-status";
 import AppError from "../../Error/AppError";
 import { prisma } from "../../lib/prisma";
-import { ICreateProperty } from "./property.interface";
+import { ICreateProperty, IPropertyFilterRequest } from "./property.interface";
 import { Role, UserStatus } from "../../../generated/prisma/enums";
+import { PropertyWhereInput } from "../../../generated/prisma/models";
 
 // create landlordProperties
 const createPropertiesIntoDB = async (
@@ -33,7 +34,10 @@ const createPropertiesIntoDB = async (
   });
 
   if (!category) {
-    throw new AppError(httpStatus.NOT_FOUND, "Category does not exist in DataBase. Please provide a valid category ID");
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      "Category does not exist in DataBase. Please provide a valid category ID",
+    );
   }
 
   const result = await prisma.property.create({
@@ -59,6 +63,113 @@ const createPropertiesIntoDB = async (
   };
 };
 
+// get all properties Public
+const getAllPropertiesFromDB = async (query: IPropertyFilterRequest) => {
+  const location = query.location?.trim();
+  const minPrice = query?.minPrice ? Number(query?.minPrice) : undefined;
+  const maxPrice = query?.maxPrice ? Number(query?.maxPrice) : undefined;
+  const limit = query.limit ? Number(query.limit) : 10;
+  const page = query.page ? Number(query.page) : 1;
+  const skip = (page - 1) * limit;
+  const sortBy = query.sortBy ? query.sortBy : "createdAt";
+  const sortOrder = query.sortOrder ? query.sortOrder : "desc";
+  const type = query.type?.trim();
+
+  const andCondition: PropertyWhereInput[] = [];
+
+  if (location) {
+    andCondition.push({
+      OR: [
+        {
+          location: {
+            contains: location,
+            mode: "insensitive",
+          },
+        },
+      ],
+    });
+  }
+
+  // Price filter
+  if (minPrice || maxPrice) {
+    andCondition.push({
+      price: {
+        ...(minPrice && {
+          gte: minPrice,
+        }),
+
+        ...(maxPrice && {
+          lte: maxPrice,
+        }),
+      },
+    });
+  }
+
+  if (type) {
+    andCondition.push({
+      category: {
+        name: {
+          contains: type,
+          mode: "insensitive",
+        },
+      },
+    });
+  }
+
+  if (query?.landlordId) {
+    andCondition.push({
+      landlordId: query?.landlordId,
+    });
+  }
+
+  const properties = await prisma.property.findMany({
+    where: {
+      AND: andCondition,
+    },
+
+    take: limit,
+    skip: skip,
+
+    orderBy: {
+      [sortBy]: sortOrder,
+    },
+
+    include: {
+      landlord: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+
+      category: true,
+      _count : {
+        select : {
+            reviews : true
+        }
+      }
+    },
+  });
+
+  const totalProperty = await prisma.property.count({
+    where: {
+      AND: andCondition,
+    },
+  });
+
+  return {
+    data: properties,
+    meta: {
+      page: page,
+      limit: limit,
+      total: totalProperty,
+      totalPages: Math.ceil(totalProperty / limit),
+    },
+  };
+};
+
 export const propertiesService = {
   createPropertiesIntoDB,
+  getAllPropertiesFromDB,
 };

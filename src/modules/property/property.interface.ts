@@ -1,4 +1,4 @@
-
+import { PropertyWhereInput } from "../../../generated/prisma/models";
 
 export interface ICreateProperty {
   title: string;
@@ -8,4 +8,15 @@ export interface ICreateProperty {
   image?: string;
   available?: boolean;
   categoryId: string;
-};
+}
+
+export interface IPropertyFilterRequest extends PropertyWhereInput {
+  location?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  type?: string;
+  page?: string;
+  limit?: string;
+  sortOrder?: string;
+  sortBy?: string;
+}
