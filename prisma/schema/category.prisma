@@ -3,6 +3,9 @@ model Category {
 
   name String @unique
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   properties Property[]
 
   @@map("categories")

@@ -28,7 +28,36 @@ const createCategoryInDB = async (payload: ICreateCategory) => {
   return result;
 };
 
+// get all category from db
+const getAllCategoryFromDB = async () => {
+  const categories = await prisma.category.findMany({
+    include: {
+      properties: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+      _count: {
+        select: {
+          properties: true,
+        },
+      },
+    },
+    orderBy: {
+      updatedAt: "desc",
+    },
+  });
+
+  const totalCategory = await prisma.category.count();
+
+  return {
+    categories,
+    totalCategory
+  }
+};
 
 export const categoryServices = {
   createCategoryInDB,
+  getAllCategoryFromDB,
 };
