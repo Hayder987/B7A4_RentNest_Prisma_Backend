@@ -2,7 +2,7 @@ import httpStatus from "http-status";
 import AppError from "../../Error/AppError";
 import { prisma } from "../../lib/prisma";
 import { ICreateCategory } from "./category.interface";
-import { formatCategoryName } from "../../utils/formatCategoryName";
+import { categoryFindById, formatCategoryName } from "./category.utils";
 
 // create category
 const createCategoryInDB = async (payload: ICreateCategory) => {
@@ -59,22 +59,13 @@ const getAllCategoryFromDB = async () => {
   };
 };
 
-
 // update category
 const updatedCategoryIntoDB = async (
   payload: ICreateCategory,
   categoryId: string,
 ) => {
-  if (!categoryId) {
-    throw new AppError(httpStatus.BAD_REQUEST, "Give Category Id In Routes");
-  }
-
   //   find isExistsCategory
-  const isCategoryExists = await prisma.category.findUnique({
-    where: {
-      id: categoryId,
-    },
-  });
+  const isCategoryExists =await categoryFindById(categoryId);
 
   if (!isCategoryExists) {
     throw new AppError(httpStatus.NOT_FOUND, "Category not found");
@@ -111,8 +102,33 @@ const updatedCategoryIntoDB = async (
   return updatedCategory;
 };
 
+// delete category by admin
+const deleteCategoryFromDB = async (categoryId: string) => {
+  const isExistsCategory = await categoryFindById(categoryId);
+
+  if (!isExistsCategory) {
+    throw new AppError(httpStatus.NOT_FOUND, "Category not found");
+  }
+
+  const propertyCount = isExistsCategory?._count?.properties;
+
+  if (propertyCount > 0) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Category cannot be deleted because it is assigned to one or more properties.",
+    );
+  }
+
+  await prisma.category.delete({
+    where: {
+      id: categoryId,
+    },
+  });
+};
+
 export const categoryServices = {
   createCategoryInDB,
   getAllCategoryFromDB,
   updatedCategoryIntoDB,
+  deleteCategoryFromDB,
 };

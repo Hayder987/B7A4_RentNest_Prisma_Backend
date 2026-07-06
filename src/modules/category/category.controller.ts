@@ -38,8 +38,11 @@ const getAllCategory = catchAsync(
 // update category by admin
 const updateCategory = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const categoryId = req.params.id
-    const result = await categoryServices.updatedCategoryIntoDB(req.body, categoryId as string);
+    const categoryId = req.params.id;
+    const result = await categoryServices.updatedCategoryIntoDB(
+      req.body,
+      categoryId as string,
+    );
 
     sendResponse(res, {
       success: true,
@@ -50,8 +53,25 @@ const updateCategory = catchAsync(
   },
 );
 
+// delete Category
+const deleteCategory = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const categoryId = req.params.id;
+
+     await categoryServices.deleteCategoryFromDB(categoryId as string,);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.CREATED,
+      message: "Category Deleted successfully!",
+      data: null,
+    });
+  },
+);
+
 export const categoryController = {
   createCategory,
   getAllCategory,
   updateCategory,
+  deleteCategory,
 };
