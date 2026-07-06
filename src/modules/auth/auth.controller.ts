@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { authServices } from "./auth.service";
 import { sendResponse } from "../../utils/sendResponse";
+import { JwtPayload } from "jsonwebtoken";
 
 // register user
 const registerUser = catchAsync(
@@ -55,13 +56,15 @@ const loginUser = catchAsync(
 const getUserMe = catchAsync(
    async (req: Request, res: Response, next: NextFunction) =>{
 
-    const result = await authServices.getUserMeFromDB()
+    const { id } = req.user as JwtPayload;
+
+    const user = await authServices.getUserMeFromDB(id as string)
 
     sendResponse(res, {
       success: true,
       statusCode: httpStatus.OK,
       message: "Your Profile Retrieve successfully!",
-      data: result
+      data: {user}
     });
 
    } 
