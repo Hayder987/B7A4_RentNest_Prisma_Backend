@@ -5,6 +5,7 @@ import { globalErrorHandler } from "./middleware/globalErrorHandler";
 import { authRoutes } from "./modules/auth/auth.route";
 import cookieParser from "cookie-parser";
 import config from "./config";
+import { notFound } from "./middleware/notFound";
 
 const app:Application = express();
 
@@ -37,6 +38,7 @@ app.get("/", (re: Request, res: Response) => {
 
 
 // use error handler middleware
+app.use(notFound);
 app.use(globalErrorHandler);
 
 
