@@ -21,16 +21,31 @@ const registerUser = catchAsync(
 // login user
 const loginUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const data = await authServices.loginUserIntoDB(req.body);
+    const {accessToken, refreshToken, user} = await authServices.loginUserIntoDB(req.body);
+
+      // set token on cookie
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "none",
+      maxAge: 1000 * 60 * 60 * 24 * 3,
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "none",
+      maxAge: 1000 * 60 * 60 * 24 * 15,
+    });
 
     sendResponse(res, {
       success: true,
       statusCode: httpStatus.OK,
       message: "User Login successfully!",
       data: {
-        accessToken: data?.accessToken,
-        refreshToken: data?.refreshToken,
-        user: data?.userWithoutPassword,
+        accessToken,
+        refreshToken,
+        user,
       },
     });
   },

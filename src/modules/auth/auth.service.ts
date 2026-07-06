@@ -60,6 +60,7 @@ const loginUserIntoDB = async (payload: ILoginUser) => {
     );
   }
 
+  //   password check is correct?
   const isPasswordMatch = await bcrypt.compare(password, user?.password);
 
   if (!isPasswordMatch) {
@@ -79,7 +80,7 @@ const loginUserIntoDB = async (payload: ILoginUser) => {
     role: user.role,
   } as JwtPayload;
 
-    const accessToken = jwtUtils.createToken(
+  const accessToken = jwtUtils.createToken(
     jwtPayload,
     config.jwt_access_secret,
     config.jwt_access_expires_in as SignOptions,
@@ -91,8 +92,7 @@ const loginUserIntoDB = async (payload: ILoginUser) => {
     config.jwt_refresh_expires_in as SignOptions,
   );
 
-  return { accessToken, refreshToken, userWithoutPassword};
-
+  return { accessToken, refreshToken, user: userWithoutPassword };
 };
 
 export const authServices = {
