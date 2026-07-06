@@ -95,7 +95,7 @@ const updatedCategoryIntoDB = async (
   if (duplicate) {
     throw new AppError(
       httpStatus.CONFLICT,
-      "Category already exists In DataBase",
+      `${formattedName} Category already exists In DataBase`,
     );
   }
 
