@@ -1,5 +1,6 @@
 import express, { Application, Request, Response } from "express";
 import httpStatus from "http-status";
+import { globalErrorHandler } from "./middleware/globalErrorHandler";
 
 const app:Application = express();
 
@@ -8,6 +9,8 @@ const app:Application = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// using route middleware
+app.use("/api/auth", )
 
 
 // root route
@@ -20,6 +23,9 @@ app.get("/", (re: Request, res: Response) => {
   });
 });
 
+
+// use error handler middleware
+app.use(globalErrorHandler);
 
 
 export default app;
