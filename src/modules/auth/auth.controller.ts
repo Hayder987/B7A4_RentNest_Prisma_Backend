@@ -51,8 +51,25 @@ const loginUser = catchAsync(
   },
 );
 
+// get personal user
+const getUserMe = catchAsync(
+   async (req: Request, res: Response, next: NextFunction) =>{
+
+    const result = await authServices.getUserMeFromDB()
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Your Profile Retrieve successfully!",
+      data: result
+    });
+
+   } 
+);
+
 
 export const authController = {
   registerUser,
   loginUser,
+  getUserMe
 };

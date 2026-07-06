@@ -45,7 +45,6 @@ const registerUserIntoDB = async (payload: IRegisterUser) => {
 };
 
 // login user inDataBase
-
 const loginUserIntoDB = async (payload: ILoginUser) => {
   const { email, password } = payload;
 
@@ -95,7 +94,13 @@ const loginUserIntoDB = async (payload: ILoginUser) => {
   return { accessToken, refreshToken, user: userWithoutPassword };
 };
 
+// get user me personal user
+const getUserMeFromDB = async ()=>{
+
+}
+
 export const authServices = {
   registerUserIntoDB,
   loginUserIntoDB,
+  getUserMeFromDB
 };
