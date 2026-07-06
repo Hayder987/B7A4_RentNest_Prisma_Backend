@@ -6,6 +6,7 @@ import { authRoutes } from "./modules/auth/auth.route";
 import cookieParser from "cookie-parser";
 import config from "./config";
 import { notFound } from "./middleware/notFound";
+import { categoryRoutes } from "./modules/category/category.route";
 
 const app:Application = express();
 
@@ -24,6 +25,7 @@ app.use(cookieParser());
 
 // using route middleware
 app.use("/api/auth", authRoutes);
+app.use("/api/categories", categoryRoutes);
 
 
 // root route
