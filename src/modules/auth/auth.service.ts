@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import config from "../../config";
 import { UserStatus } from "../../../generated/prisma/enums";
 import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
+import { jwtUtils } from "../../utils/jwt";
 
 // register user in database
 const registerUserIntoDB = async (payload: IRegisterUser) => {
@@ -68,6 +69,8 @@ const loginUserIntoDB = async (payload: ILoginUser) => {
     );
   }
 
+  const { password: _, ...userWithoutPassword } = user;
+
   // create jwt token
   const jwtPayload = {
     id: user.id,
@@ -76,15 +79,20 @@ const loginUserIntoDB = async (payload: ILoginUser) => {
     role: user.role,
   } as JwtPayload;
 
-  const accessToken = jwt.sign(
+    const accessToken = jwtUtils.createToken(
     jwtPayload,
-    config.jwt_access_secret as string,
-    {
-      expiresIn: config.jwt_access_expires_in,
-    } as SignOptions,
+    config.jwt_access_secret,
+    config.jwt_access_expires_in as SignOptions,
   );
 
-  return accessToken;
+  const refreshToken = jwtUtils.createToken(
+    jwtPayload,
+    config.jwt_refresh_secret,
+    config.jwt_refresh_expires_in as SignOptions,
+  );
+
+  return { accessToken, refreshToken, userWithoutPassword};
+
 };
 
 export const authServices = {
