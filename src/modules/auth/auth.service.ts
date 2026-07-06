@@ -5,6 +5,7 @@ import { IRegisterUser } from "./auth.interface";
 import bcrypt from "bcryptjs";
 import config from "../../config";
 
+// register user in database
 const registerUserIntoDB = async (payload: IRegisterUser) => {
   const { email, password } = payload;
 
@@ -27,7 +28,7 @@ const registerUserIntoDB = async (payload: IRegisterUser) => {
     Number(config.bcrypt_salt_rounds),
   );
 
-  
+
   const result = await prisma.user.create({
     data: {
       ...payload,
@@ -40,6 +41,7 @@ const registerUserIntoDB = async (payload: IRegisterUser) => {
 
   return result;
 };
+
 
 export const authServices = {
   registerUserIntoDB,
