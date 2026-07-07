@@ -14,6 +14,14 @@ router.post(
   rentalRequestController.postRentalRequest,
 );
 
+// get my rental req
 router.get("/", auth(Role.TENANT), rentalRequestController.getMyRentalRequests);
+
+// get rental details
+router.get(
+  "/:id",
+  auth(Role.ADMIN, Role.LANDLORD, Role.TENANT),
+  rentalRequestController.getRentalDetails,
+);
 
 export const rentalRequestRoutes = router;

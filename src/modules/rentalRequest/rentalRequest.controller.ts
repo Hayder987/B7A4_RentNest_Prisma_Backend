@@ -25,22 +25,47 @@ const postRentalRequest = catchAsync(
 );
 
 // get my rental request
-const getMyRentalRequests = catchAsync (
-  async (req: Request, res: Response, next: NextFunction) =>{
+const getMyRentalRequests = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
     const tenantId = req.user?.id;
 
-    const result = await rentalRequestServices.getMyRentalRequestsFromDB(tenantId as string)
-    
+    const result = await rentalRequestServices.getMyRentalRequestsFromDB(
+      tenantId as string,
+    );
+
     sendResponse(res, {
       success: true,
       statusCode: httpStatus.OK,
       message: "Rental requests retrieved successfully!",
       data: result,
     });
-  }  
-)
+  },
+);
+
+// get rental req by id
+const getRentalDetails = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const rentalId = req.params.id;
+    const userId = req.user?.id;
+    const role = req.user?.role;
+
+    const result = await rentalRequestServices.getRentalDetailsFromDB(
+      rentalId as string,
+      userId as string,
+      role,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Rental details retrieved successfully.",
+      data: result,
+    });
+  },
+);
 
 export const rentalRequestController = {
   postRentalRequest,
-  getMyRentalRequests
+  getMyRentalRequests,
+  getRentalDetails,
 };

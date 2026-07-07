@@ -2,7 +2,7 @@ import httpStatus from "http-status";
 import AppError from "../../Error/AppError";
 import { prisma } from "../../lib/prisma";
 import { ICreateRentalRequest } from "./rentalReuest.interface";
-import { RentalStatus } from "../../../generated/prisma/enums";
+import { RentalStatus, Role } from "../../../generated/prisma/enums";
 
 // create rental request
 const createRentalRequestIntoDB = async (
@@ -115,7 +115,86 @@ const getMyRentalRequestsFromDB = async (tenantId: string) => {
   return formattedRental;
 };
 
+// get rental request by id
+const getRentalDetailsFromDB = async (
+  rentalId: string,
+  userId: string,
+  role: Role,
+) => {
+  const rental = await prisma.rentalRequest.findUnique({
+    where: {
+      id: rentalId,
+    },
+    include: {
+      tenant: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      property: {
+        include: {
+          landlord: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          category: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+      payment: true,
+    },
+  });
+
+  if (!rental) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      "Rental request not found In Database",
+    );
+  }
+
+  if (role === Role.ADMIN) {
+  } else if (role === Role.LANDLORD) {
+    if (rental.property.landlordId !== userId) {
+      throw new AppError(
+        httpStatus.FORBIDDEN,
+        "FORBIDDEN: You are not authorized to access this rental request.",
+      );
+    }
+  } else if (role === Role.TENANT) {
+    if (rental.tenantId !== userId) {
+      throw new AppError(
+        httpStatus.FORBIDDEN,
+        "FORBIDDEN: You are not authorized to access this rental request.",
+      );
+    }
+  } else {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "FORBIDDEN: You are not authorized to access this rental request.",
+    );
+  };
+
+  return {
+    ...rental,
+    property: {
+      ...rental.property,
+      price: Number(rental.property.price),
+    },
+  };
+
+};
+
 export const rentalRequestServices = {
   createRentalRequestIntoDB,
   getMyRentalRequestsFromDB,
+  getRentalDetailsFromDB,
 };
