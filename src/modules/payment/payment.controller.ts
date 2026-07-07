@@ -6,7 +6,7 @@ import { sendResponse } from "../../utils/sendResponse";
 
 const createCheckoutSession = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const tenantId = req.user!.id;
+    const tenantId = req.user?.id;
 
     const result =
       await paymentService.createCheckoutSessionIntoDB(
@@ -42,7 +42,7 @@ const handleWebhook = catchAsync(
 
 // get my payment
 const getMyPayments = catchAsync(async (req, res) => {
-  const tenantId = req.user!.id;
+  const tenantId = req.user?.id;
 
   const result = await paymentService.getMyPaymentsFromDB(
     tenantId,
@@ -56,12 +56,27 @@ const getMyPayments = catchAsync(async (req, res) => {
   });
 });
 
+// get payment details by id
+const getPaymentDetails = catchAsync(async (req, res) => {
+  const paymentId = req.params.id;
 
+  const result = await paymentService.getPaymentDetailsFromDB(
+    paymentId as string,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Payment details retrieved successfully.",
+    data: result,
+  });
+});
 
 
 export const paymentController = {
    createCheckoutSession,
    handleWebhook,
    getMyPayments,
+   getPaymentDetails
    
 }

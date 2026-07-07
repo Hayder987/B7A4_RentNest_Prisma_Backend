@@ -1,8 +1,8 @@
-import  httpStatus  from 'http-status';
+import httpStatus from "http-status";
 import Stripe from "stripe";
 import AppError from "../../Error/AppError";
-import { prisma } from '../../lib/prisma';
-import { PaymentStatus, RentalStatus } from '../../../generated/prisma/enums';
+import { prisma } from "../../lib/prisma";
+import { PaymentStatus, RentalStatus } from "../../../generated/prisma/enums";
 
 export const handleCheckoutCompleted = async (
   session: Stripe.Checkout.Session,
@@ -44,7 +44,7 @@ export const handleCheckoutCompleted = async (
         transactionId:
           typeof session.payment_intent === "string"
             ? session.payment_intent
-            : session.payment_intent?.id ?? session.id,
+            : (session.payment_intent?.id ?? session.id),
 
         amount: rental.property.price,
 
@@ -74,21 +74,17 @@ export const handleCheckoutCompleted = async (
   });
 };
 
-
 export const handleCheckoutExpired = async (
   session: Stripe.Checkout.Session,
 ) => {
-  console.log(
-    `Checkout session expired: ${session.id}`,
-  );
+  console.log(`Checkout session expired: ${session.id}`);
 };
 
 export const handlePaymentFailed = async (
   paymentIntent: Stripe.PaymentIntent,
 ) => {
-  console.log(
-    `Payment failed: ${paymentIntent.id}`,
-  );
+  console.log(`Payment failed: ${paymentIntent.id}`);
 
   console.log(paymentIntent.last_payment_error?.message);
 };
+

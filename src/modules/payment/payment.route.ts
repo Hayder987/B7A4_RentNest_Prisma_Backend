@@ -16,12 +16,12 @@ router.post(
 
 router.post("/webhook", paymentController.handleWebhook);
 
-router.get(
-  "/",
-  auth(Role.TENANT),
-  paymentController.getMyPayments,
-);
+router.get("/", auth(Role.TENANT), paymentController.getMyPayments);
 
-router.get("/:id", auth(Role.TENANT, Role.LANDLORD, Role.ADMIN), )
+router.get(
+  "/:id",
+  auth(Role.TENANT, Role.LANDLORD, Role.ADMIN),
+  paymentController.getPaymentDetails,
+);
 
 export const paymentRoutes = router;

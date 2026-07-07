@@ -3,7 +3,10 @@ import Stripe from "stripe";
 import AppError from "../../Error/AppError";
 import { prisma } from "../../lib/prisma";
 import { ICreateCheckoutSession } from "./payment.interface";
-import { PaymentStatus, RentalStatus } from "../../../generated/prisma/enums";
+import {
+  PaymentStatus,
+  RentalStatus,
+} from "../../../generated/prisma/enums";
 import { stripe } from "../../lib/stripe";
 import config from "../../config";
 import {
@@ -168,7 +171,7 @@ const getMyPaymentsFromDB = async (tenantId: string) => {
     },
   });
 
-  const formattedResult = result.map((payment) => ({
+  const formattedResult = result?.map((payment) => ({
     ...payment,
     amount: Number(payment.amount),
     rentalRequest: {
@@ -183,8 +186,58 @@ const getMyPaymentsFromDB = async (tenantId: string) => {
   return formattedResult;
 };
 
+// get payment details
+const getPaymentDetailsFromDB = async (
+  paymentId: string,
+) => {
+  const payment = await prisma.payment.findUniqueOrThrow({
+    where: {
+      id: paymentId,
+    },
+
+    include: {
+      rentalRequest: {
+        select: {
+          id: true,
+          status: true,
+          property: {
+            select: {
+              id: true,
+              title: true,
+              location: true,
+              image: true,
+              price: true,
+              category: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+
+  });
+
+  const formatPayment = {
+    ...payment,
+    amount: Number(payment.amount),
+    rentalRequest: {
+      ...payment.rentalRequest,
+      property: {
+        ...payment.rentalRequest.property,
+        price: Number(payment.rentalRequest.property.price),
+      },
+    },
+  };
+
+  return formatPayment;
+};
+
 export const paymentService = {
   createCheckoutSessionIntoDB,
   handleWebhook,
   getMyPaymentsFromDB,
+  getPaymentDetailsFromDB,
 };
