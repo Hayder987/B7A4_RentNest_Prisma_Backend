@@ -8,6 +8,7 @@ import config from "./config";
 import { notFound } from "./middleware/notFound";
 import { categoryRoutes } from "./modules/category/category.route";
 import { propertiesRoutes } from "./modules/property/property.route";
+import { rentalRequestRoutes } from "./modules/rentalRequest/rentalRequest.route";
 
 
 const app:Application = express();
@@ -29,7 +30,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/properties", propertiesRoutes);
-
+app.use("/api/rentals", rentalRequestRoutes)
 
 // root route
 app.get("/", (re: Request, res: Response) => {
