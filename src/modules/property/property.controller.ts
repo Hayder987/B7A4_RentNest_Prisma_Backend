@@ -81,25 +81,51 @@ const updatePropertyById = catchAsync(
 
 // delete property by id
 const deletePropertyById = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) =>{
+  async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user?.id;
     const propertyId = req.params.id;
 
-    const deletedProperty = await propertiesService.deletePropertyByIdFromDB(userId as string, propertyId as string);
+    const deletedProperty = await propertiesService.deletePropertyByIdFromDB(
+      userId as string,
+      propertyId as string,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "This Property Deleted successfully!",
+      data: { deletedProperty },
+    });
+  },
+);
+
+// update only Availability
+const updateAvailability = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const propertyId = req.params.id;
+    const userId = req.user?.id;
+    const payload = req?.body;
+
+    const result = await propertiesService.updateAvailabilityIntoDB(
+      propertyId as string,
+      userId as string,
+      payload,
+    );
 
     sendResponse(res, {
       success: true,
       statusCode: httpStatus.CREATED,
-      message: "This Property Deleted successfully!",
-      data: {deletedProperty},
+      message: "Update Property Availability Status Successfully!",
+      data: result,
     });
-  }
-)
+  },
+);
 
 export const propertiesController = {
   createProperties,
   getAllProperties,
   getPropertiesById,
   updatePropertyById,
-  deletePropertyById
+  deletePropertyById,
+  updateAvailability,
 };

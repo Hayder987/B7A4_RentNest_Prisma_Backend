@@ -5,6 +5,7 @@ import { Role } from "../../../generated/prisma/enums";
 import { validateRequest } from "../../middleware/validateRequest";
 import {
   createPropertyValidationSchema,
+  updateAvailabilitySchema,
   updatePropertyValidationSchema,
 } from "./property.validation";
 
@@ -32,6 +33,14 @@ router.delete(
   "/:id",
   auth(Role.LANDLORD),
   propertiesController.deletePropertyById,
+);
+
+// update available status
+router.patch(
+  "/:id/availability",
+  validateRequest(updateAvailabilitySchema),
+  auth(Role.LANDLORD),
+  propertiesController.updateAvailability,
 );
 
 export const propertiesRoutes = router;

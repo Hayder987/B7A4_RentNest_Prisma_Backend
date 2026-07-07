@@ -4,6 +4,7 @@ import { prisma } from "../../lib/prisma";
 import {
   ICreateProperty,
   IPropertyFilterRequest,
+  IUpdateAvailability,
   IUpdateProperty,
 } from "./property.interface";
 import { Role, UserStatus } from "../../../generated/prisma/enums";
@@ -255,8 +256,8 @@ const updatePropertiesByIdIntoDB = async (
 
   if (userId !== property?.landlordId) {
     throw new AppError(
-      httpStatus.UNAUTHORIZED,
-      "UNAUTHORIZED:This Property is not Yours! You Have no Permission",
+      httpStatus.FORBIDDEN,
+      "FORBIDDEN:This Property is not Yours! You Have no Permission:This Property is not Yours! You Have no Permission",
     );
   }
 
@@ -314,8 +315,8 @@ const deletePropertyByIdFromDB = async (userId: string, propertyId: string) => {
 
     if (userId !== property?.landlordId) {
       throw new AppError(
-        httpStatus.UNAUTHORIZED,
-        "UNAUTHORIZED:This Property is not Yours! You Have no Permission",
+        httpStatus.FORBIDDEN,
+        "FORBIDDEN:This Property is not Yours! You Have no Permission",
       );
     }
 
@@ -358,10 +359,47 @@ const deletePropertyByIdFromDB = async (userId: string, propertyId: string) => {
   return transactionResult;
 };
 
+// update Availability by id
+const updateAvailabilityIntoDB = async (
+  propertyId: string,
+  userId: string,
+  payload: IUpdateAvailability,
+) => {
+  // Check property exists
+  const property = await prisma.property.findUnique({
+    where: {
+      id: propertyId,
+    },
+  });
+
+  if (!property) {
+    throw new AppError(httpStatus.NOT_FOUND, "Property not found.");
+  }
+
+  // here check own properties
+  if (property.landlordId !== userId) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "FORBIDDEN:This Property is not Yours! You Have no Permission",
+    );
+  }
+
+  const result = await prisma.property.update({
+    where: {
+      id: propertyId,
+    },
+    data: {
+      available: payload.available,
+    },
+  });
+  return result;
+};
+
 export const propertiesService = {
   createPropertiesIntoDB,
   getAllPropertiesFromDB,
   getPropertiesByIdFromDB,
   updatePropertiesByIdIntoDB,
   deletePropertyByIdFromDB,
+  updateAvailabilityIntoDB,
 };

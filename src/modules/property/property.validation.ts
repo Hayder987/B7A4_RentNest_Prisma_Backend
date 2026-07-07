@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 
 export const createPropertyValidationSchema = z.object({
@@ -26,17 +25,18 @@ export const createPropertyValidationSchema = z.object({
     })
     .positive("Price must be greater than 0"),
 
-  image: z
-    .url("Please provide a valid image URL")
-    .optional(),
+  image: z.url("Please provide a valid image URL").optional(),
 
-  available: z
-    .boolean()
-    .optional(),
+  available: z.boolean().optional(),
 
-  categoryId: z
-    .uuid("Invalid category id"),
+  categoryId: z.uuid("Invalid category id"),
 });
 
 export const updatePropertyValidationSchema =
   createPropertyValidationSchema.partial();
+
+export const updateAvailabilitySchema = z.object({
+  available: z.boolean({
+    error: "Available status must be a boolean.",
+  }),
+}).strict();

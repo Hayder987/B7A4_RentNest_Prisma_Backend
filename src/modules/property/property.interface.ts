@@ -22,4 +22,8 @@ export interface IPropertyFilterRequest extends PropertyWhereInput {
   limit?: string;
   sortOrder?: string;
   sortBy?: string;
+};
+
+export interface IUpdateAvailability {
+  available: boolean;
 }
