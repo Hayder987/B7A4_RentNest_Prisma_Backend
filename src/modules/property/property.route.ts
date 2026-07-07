@@ -16,5 +16,6 @@ router.post(
 
 router.get("/", propertiesController.getAllProperties);
 router.get("/:id", propertiesController.getPropertiesById);
+router.patch("/:id", auth(Role.LANDLORD), propertiesController.updatePropertyById);
 
 export const propertiesRoutes = router;

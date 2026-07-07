@@ -10,6 +10,8 @@ export interface ICreateProperty {
   categoryId: string;
 }
 
+export type IUpdateProperty = Partial<ICreateProperty>;
+
 export interface IPropertyFilterRequest extends PropertyWhereInput {
   location?: string;
   searchTerm?: string,

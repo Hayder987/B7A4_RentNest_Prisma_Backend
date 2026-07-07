@@ -44,13 +44,36 @@ const getPropertiesById = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const propertyId = req.params.id;
 
-    const property = await propertiesService.getPropertiesByIdFromDB(propertyId as string);
+    const property = await propertiesService.getPropertiesByIdFromDB(
+      propertyId as string,
+    );
 
     sendResponse(res, {
       success: true,
       statusCode: httpStatus.OK,
       message: "Properties Retrieve successfully!",
-      data: {property}
+      data: { property },
+    });
+  },
+);
+
+const updatePropertyById = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const payload = req.body;
+    const propertyId = req.params.id;
+    const userId = req.user?.id;
+
+    const result = await propertiesService.updatePropertiesByIdIntoDB(
+      propertyId as string,
+      userId as string,
+      payload,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.CREATED,
+      message: "Properties Updated successfully!",
+      data: result,
     });
   },
 );
@@ -59,4 +82,5 @@ export const propertiesController = {
   createProperties,
   getAllProperties,
   getPropertiesById,
+  updatePropertyById,
 };

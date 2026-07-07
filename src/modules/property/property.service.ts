@@ -1,7 +1,11 @@
 import httpStatus from "http-status";
 import AppError from "../../Error/AppError";
 import { prisma } from "../../lib/prisma";
-import { ICreateProperty, IPropertyFilterRequest } from "./property.interface";
+import {
+  ICreateProperty,
+  IPropertyFilterRequest,
+  IUpdateProperty,
+} from "./property.interface";
 import { Role, UserStatus } from "../../../generated/prisma/enums";
 import { PropertyWhereInput } from "../../../generated/prisma/models";
 
@@ -215,7 +219,7 @@ const getPropertiesByIdFromDB = async (propertyId: string) => {
       _count: {
         select: {
           rentals: true,
-          reviews : true
+          reviews: true,
         },
       },
     },
@@ -227,8 +231,41 @@ const getPropertiesByIdFromDB = async (propertyId: string) => {
   };
 };
 
+// update properties by id
+const updatePropertiesByIdIntoDB = async (
+  propertyId: string,
+  userId: string,
+  payload: IUpdateProperty,
+) => {
+  const property = await prisma.property.findUniqueOrThrow({
+    where: {
+      id: propertyId,
+    },
+  });
+
+
+  if (userId !== property?.landlordId) {
+    throw new AppError(
+      httpStatus.UNAUTHORIZED,
+      "UNAUTHORIZED: You Have No Permission To Update This Property",
+    );
+  };
+
+  const result = await prisma.property.update({
+    where: {
+      id: propertyId,
+    },
+    data: {
+      ...payload,
+    },
+  });
+
+  return result;
+};
+
 export const propertiesService = {
   createPropertiesIntoDB,
   getAllPropertiesFromDB,
   getPropertiesByIdFromDB,
+  updatePropertiesByIdIntoDB,
 };
