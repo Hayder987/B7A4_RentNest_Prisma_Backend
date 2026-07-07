@@ -73,3 +73,22 @@ export const handleCheckoutCompleted = async (
     });
   });
 };
+
+
+export const handleCheckoutExpired = async (
+  session: Stripe.Checkout.Session,
+) => {
+  console.log(
+    `Checkout session expired: ${session.id}`,
+  );
+};
+
+export const handlePaymentFailed = async (
+  paymentIntent: Stripe.PaymentIntent,
+) => {
+  console.log(
+    `Payment failed: ${paymentIntent.id}`,
+  );
+
+  console.log(paymentIntent.last_payment_error?.message);
+};

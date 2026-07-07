@@ -6,7 +6,7 @@ import { ICreateCheckoutSession } from "./payment.interface";
 import { PaymentStatus, RentalStatus } from "../../../generated/prisma/enums";
 import { stripe } from "../../lib/stripe";
 import config from "../../config";
-import { handleCheckoutCompleted } from "./payment.utils";
+import { handleCheckoutCompleted, handleCheckoutExpired, handlePaymentFailed } from "./payment.utils";
 
 // create checkout session
 const createCheckoutSessionIntoDB = async (
@@ -116,7 +116,20 @@ const handleWebhook = async (payload: Buffer, signature: string) => {
       );
       break;
 
-    default:
+      case "checkout.session.expired":
+      await handleCheckoutExpired(
+        event.data.object as Stripe.Checkout.Session,
+      );
+      break;
+
+      case "payment_intent.payment_failed":
+      await handlePaymentFailed(
+        event.data.object as Stripe.PaymentIntent,
+      );
+      break;
+
+     default:
+      console.log(`Unhandled Stripe Event: ${event.type}`);
       break;
   }
 };
