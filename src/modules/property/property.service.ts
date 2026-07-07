@@ -91,33 +91,32 @@ const getAllPropertiesFromDB = async (query: IPropertyFilterRequest) => {
   }
 
   if (query?.searchTerm) {
-  andCondition.push({
-    OR: [
-      {
-        title: {
-          contains: query?.searchTerm,
-          mode: "insensitive",
+    andCondition.push({
+      OR: [
+        {
+          title: {
+            contains: query?.searchTerm,
+            mode: "insensitive",
+          },
         },
-      },
-      {
-        description: {
-          contains: query?.searchTerm,
-          mode: "insensitive",
+        {
+          description: {
+            contains: query?.searchTerm,
+            mode: "insensitive",
+          },
         },
-      },
-    ],
-  });
-}
+      ],
+    });
+  }
 
   // Price filter
-  if (minPrice || maxPrice) {
+  if (minPrice !== undefined || maxPrice !== undefined) {
     andCondition.push({
       price: {
-        ...(minPrice && {
+        ...(minPrice !== undefined && {
           gte: minPrice,
         }),
-
-        ...(maxPrice && {
+        ...(maxPrice !== undefined && {
           lte: maxPrice,
         }),
       },
@@ -163,11 +162,11 @@ const getAllPropertiesFromDB = async (query: IPropertyFilterRequest) => {
       },
 
       category: true,
-      _count : {
-        select : {
-            reviews : true
-        }
-      }
+      _count: {
+        select: {
+          reviews: true,
+        },
+      },
     },
   });
 
@@ -177,8 +176,13 @@ const getAllPropertiesFromDB = async (query: IPropertyFilterRequest) => {
     },
   });
 
+  const formattedProperties = properties.map((property) => ({
+    ...property,
+    price: Number(property.price),
+  }));
+
   return {
-    data: properties,
+    data: formattedProperties,
     meta: {
       page: page,
       limit: limit,
@@ -188,9 +192,43 @@ const getAllPropertiesFromDB = async (query: IPropertyFilterRequest) => {
   };
 };
 
+// get properties by id
+const getPropertiesByIdFromDB = async (propertyId: string) => {
+  const result = await prisma.property.findFirstOrThrow({
+    where: {
+      id: propertyId,
+    },
+    include: {
+      landlord: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      category: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      _count: {
+        select: {
+          rentals: true,
+          reviews : true
+        },
+      },
+    },
+  });
 
+  return {
+    ...result,
+    price: Number(result.price),
+  };
+};
 
 export const propertiesService = {
   createPropertiesIntoDB,
   getAllPropertiesFromDB,
+  getPropertiesByIdFromDB,
 };

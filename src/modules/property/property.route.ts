@@ -15,5 +15,6 @@ router.post(
 );
 
 router.get("/", propertiesController.getAllProperties);
+router.get("/:id", propertiesController.getPropertiesById);
 
 export const propertiesRoutes = router;

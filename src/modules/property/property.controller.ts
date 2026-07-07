@@ -10,7 +10,10 @@ const createProperties = catchAsync(
     const landlordId = req.user?.id;
     const payload = req.body;
 
-    const result = await propertiesService.createPropertiesIntoDB(landlordId as string, payload);
+    const result = await propertiesService.createPropertiesIntoDB(
+      landlordId as string,
+      payload,
+    );
 
     sendResponse(res, {
       success: true,
@@ -24,20 +27,36 @@ const createProperties = catchAsync(
 // get all properties with filter
 const getAllProperties = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-
     const data = await propertiesService.getAllPropertiesFromDB(req.query);
- 
+
     sendResponse(res, {
       success: true,
       statusCode: httpStatus.OK,
       message: "All Properties Retrieve successfully!",
       data: data.data,
-      meta : data.meta
+      meta: data.meta,
     });
-  }  
-)
+  },
+);
+
+// get property by id
+const getPropertiesById = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const propertyId = req.params.id;
+
+    const property = await propertiesService.getPropertiesByIdFromDB(propertyId as string);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Properties Retrieve successfully!",
+      data: {property}
+    });
+  },
+);
 
 export const propertiesController = {
   createProperties,
-  getAllProperties
+  getAllProperties,
+  getPropertiesById,
 };
