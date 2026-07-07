@@ -90,6 +90,25 @@ const getAllPropertiesFromDB = async (query: IPropertyFilterRequest) => {
     });
   }
 
+  if (query?.searchTerm) {
+  andCondition.push({
+    OR: [
+      {
+        title: {
+          contains: query?.searchTerm,
+          mode: "insensitive",
+        },
+      },
+      {
+        description: {
+          contains: query?.searchTerm,
+          mode: "insensitive",
+        },
+      },
+    ],
+  });
+}
+
   // Price filter
   if (minPrice || maxPrice) {
     andCondition.push({
@@ -168,6 +187,8 @@ const getAllPropertiesFromDB = async (query: IPropertyFilterRequest) => {
     },
   };
 };
+
+
 
 export const propertiesService = {
   createPropertiesIntoDB,

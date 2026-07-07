@@ -12,6 +12,7 @@ export interface ICreateProperty {
 
 export interface IPropertyFilterRequest extends PropertyWhereInput {
   location?: string;
+  searchTerm?: string,
   minPrice?: number;
   maxPrice?: number;
   type?: string;
