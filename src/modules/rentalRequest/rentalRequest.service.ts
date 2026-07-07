@@ -4,6 +4,7 @@ import { prisma } from "../../lib/prisma";
 import { ICreateRentalRequest } from "./rentalReuest.interface";
 import { RentalStatus } from "../../../generated/prisma/enums";
 
+// create rental request
 const createRentalRequestIntoDB = async (
   tenantId: string,
   payload: ICreateRentalRequest,
@@ -80,6 +81,41 @@ const createRentalRequestIntoDB = async (
   return result;
 };
 
+// get my rental request
+const getMyRentalRequestsFromDB = async (tenantId: string) => {
+  const result = await prisma.rentalRequest.findMany({
+    where: {
+      tenantId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      property: {
+        select: {
+          id: true,
+          title: true,
+          location: true,
+          price: true,
+          available: true,
+          image: true,
+        },
+      },
+    },
+  });
+
+  const formattedRental = result.map((rental) => ({
+    ...rental,
+    property: {
+      ...rental.property,
+      price: Number(rental.property.price),
+    },
+  }));
+
+  return formattedRental;
+};
+
 export const rentalRequestServices = {
   createRentalRequestIntoDB,
+  getMyRentalRequestsFromDB,
 };
