@@ -85,10 +85,34 @@ const getLandlordRentalRequests = catchAsync(
   },
 );
 
+// rental status Approve / Reject Request update
+const updateRentalRequestStatus = catchAsync(
+  async (req: Request, res: Response) => {
+    const rentalRequestId = req.params.id;
+    const landlordId = req.user?.id;
+    const payload = req.body;
+
+    const result =
+      await rentalRequestServices.updateRentalRequestStatusIntoDB(
+        rentalRequestId as string,
+        landlordId as string,
+        payload,
+      );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Rental request status updated successfully.",
+      data: result,
+    });
+  },
+);
+
 
 export const rentalRequestController = {
   postRentalRequest,
   getMyRentalRequests,
   getRentalDetails,
-  getLandlordRentalRequests
+  getLandlordRentalRequests,
+  updateRentalRequestStatus
 };

@@ -1,7 +1,10 @@
 import httpStatus from "http-status";
 import AppError from "../../Error/AppError";
 import { prisma } from "../../lib/prisma";
-import { ICreateRentalRequest } from "./rentalReuest.interface";
+import {
+  ICreateRentalRequest,
+  IUpdateRentalRequestStatus,
+} from "./rentalReuest.interface";
 import { RentalStatus, Role } from "../../../generated/prisma/enums";
 
 // create rental request
@@ -196,7 +199,6 @@ const getRentalDetailsFromDB = async (
 
 // get landlord all rental request
 const getLandlordRentalRequestsFromDB = async (landlordId: string) => {
-
   const result = await prisma.rentalRequest.findMany({
     where: {
       property: {
@@ -222,11 +224,11 @@ const getLandlordRentalRequestsFromDB = async (landlordId: string) => {
           price: true,
           image: true,
           available: true,
-          category : {
-            select : {
-                name : true
-            }
-          }
+          category: {
+            select: {
+              name: true,
+            },
+          },
         },
       },
     },
@@ -243,9 +245,82 @@ const getLandlordRentalRequestsFromDB = async (landlordId: string) => {
   return formattedResult;
 };
 
+// rental status Approve / Reject Request update
+const updateRentalRequestStatusIntoDB = async (
+  rentalRequestId: string,
+  landlordId: string,
+  payload: IUpdateRentalRequestStatus,
+) => {
+  const rentalRequest = await prisma.rentalRequest.findUnique({
+    where: {
+      id: rentalRequestId,
+    },
+    include: {
+      property: true,
+    },
+  });
+
+ 
+  if (!rentalRequest) {
+    throw new AppError(httpStatus.NOT_FOUND, "Rental request not found.");
+  }
+
+  // check own landlord property
+  if (rentalRequest?.property?.landlordId !== landlordId) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "FORBIDDEN: You are not authorized to update this rental request.",
+    );
+  }
+
+  // Current status is PENDING
+  if (rentalRequest.status !== RentalStatus.PENDING) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Only pending rental requests can be updated.",
+    );
+  }
+
+  const result = await prisma.rentalRequest.update({
+    where: {
+      id: rentalRequestId,
+    },
+    data: {
+      status: payload.status,
+    },
+    include: {
+      tenant: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      property: {
+        select: {
+          id: true,
+          title: true,
+          location: true,
+          price: true,
+          image: true,
+        },
+      },
+    },
+  });
+
+  return {
+    ...result,
+    property: {
+      ...result.property,
+      price: Number(result.property.price),
+    },
+  };
+};
+
 export const rentalRequestServices = {
   createRentalRequestIntoDB,
   getMyRentalRequestsFromDB,
   getRentalDetailsFromDB,
   getLandlordRentalRequestsFromDB,
+  updateRentalRequestStatusIntoDB,
 };
