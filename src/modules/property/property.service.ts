@@ -166,10 +166,10 @@ const getAllPropertiesFromDB = async (query: IPropertyFilterRequest) => {
       },
 
       category: {
-        select : {
+        select: {
           id: true,
-          name : true
-        }
+          name: true,
+        },
       },
       _count: {
         select: {
@@ -258,9 +258,9 @@ const updatePropertiesByIdIntoDB = async (
       httpStatus.UNAUTHORIZED,
       "UNAUTHORIZED:This Property is not Yours! You Have no Permission",
     );
-  };
+  }
 
-    // Validate category if updating
+  // Validate category if updating
   if (payload.categoryId) {
     const category = await prisma.category.findUnique({
       where: {
@@ -269,10 +269,7 @@ const updatePropertiesByIdIntoDB = async (
     });
 
     if (!category) {
-      throw new AppError(
-        httpStatus.NOT_FOUND,
-        "Category not found.",
-      );
+      throw new AppError(httpStatus.NOT_FOUND, "Category not found.");
     }
   }
 
@@ -283,59 +280,83 @@ const updatePropertiesByIdIntoDB = async (
     data: {
       ...payload,
     },
-    include : {
-      landlord : {
-        select : {
+    include: {
+      landlord: {
+        select: {
           id: true,
           name: true,
-          email: true, 
-        }
+          email: true,
+        },
       },
-      category : {
-        select : {
-          id : true,
-          name : true
-        }
-      }
-    }
+      category: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
   });
 
   return {
     ...result,
-    price: Number(result.price)
+    price: Number(result.price),
   };
 };
 
 // delete property by id
-const deletePropertyByIdFromDB = async (userId: string, propertyId:string) =>{
-   const property = await prisma.property.findUniqueOrThrow({
-    where : {
-      id : propertyId
-    },
-   });
+const deletePropertyByIdFromDB = async (userId: string, propertyId: string) => {
+  const transactionResult = await prisma.$transaction(async (tx) => {
+    const property = await tx.property.findUniqueOrThrow({
+      where: {
+        id: propertyId,
+      },
+    });
 
-   if (userId !== property?.landlordId) {
-    throw new AppError(
-      httpStatus.UNAUTHORIZED,
-      "UNAUTHORIZED:This Property is not Yours! You Have no Permission",
-    );
-  };
-
-   const result = await prisma.property.delete({
-    where : {
-      id : propertyId
-    },
-    select : {
-      id: true,
-      title : true,
-      location : true,
-      price : true,
-      landlordId: true,
-      categoryId : true
+    if (userId !== property?.landlordId) {
+      throw new AppError(
+        httpStatus.UNAUTHORIZED,
+        "UNAUTHORIZED:This Property is not Yours! You Have no Permission",
+      );
     }
+
+    const result = await tx.property.delete({
+      where: {
+        id: propertyId,
+      },
+      select: {
+        id: true,
+        title: true,
+        location: true,
+        price: true,
+        landlordId: true,
+        category: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    const formattedResult = {
+      ...result,
+      price: Number(result.price),
+    };
+
+    // Optional for record keeping deleted properties
+    await tx.deletedProperty.create({
+      data: {
+        title: formattedResult?.title,
+        propertyId: formattedResult?.id,
+        location: formattedResult?.location,
+        price: formattedResult?.price,
+        landlordId: formattedResult?.landlordId,
+        categoryName: formattedResult?.category?.name,
+      },
+    });
+    return formattedResult;
   });
-  return result;
-}
+  return transactionResult;
+};
 
 export const propertiesService = {
   createPropertiesIntoDB,

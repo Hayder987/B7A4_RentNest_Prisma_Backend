@@ -1,0 +1,10 @@
+
+model DeletedProperty {
+    id String @id @default(uuid())
+    propertyId String
+    title String
+    location String
+    price Decimal @db.Decimal(10, 2)
+    landlordId String
+    categoryName String
+}
