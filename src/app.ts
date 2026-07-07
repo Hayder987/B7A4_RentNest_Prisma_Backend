@@ -1,3 +1,4 @@
+import { paymentRoutes } from './modules/payment/payment.route';
 import express, { Application, Request, Response } from "express";
 import cors from "cors";
 import httpStatus from "http-status";
@@ -33,6 +34,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/properties", propertiesRoutes);
 app.use("/api/rentals", rentalRequestRoutes);
 app.use("/api/landlord", landlordRoutes);
+app.use("/api/payments", paymentRoutes);
 
 // root route
 app.get("/", (re: Request, res: Response) => {
