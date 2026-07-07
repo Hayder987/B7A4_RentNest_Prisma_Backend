@@ -165,7 +165,12 @@ const getAllPropertiesFromDB = async (query: IPropertyFilterRequest) => {
         },
       },
 
-      category: true,
+      category: {
+        select : {
+          id: true,
+          name : true
+        }
+      },
       _count: {
         select: {
           reviews: true,
@@ -237,19 +242,39 @@ const updatePropertiesByIdIntoDB = async (
   userId: string,
   payload: IUpdateProperty,
 ) => {
+  // Check payload
+  if (Object.keys(payload).length === 0) {
+    throw new AppError(httpStatus.BAD_REQUEST, "No update data provided.");
+  }
+
   const property = await prisma.property.findUniqueOrThrow({
     where: {
       id: propertyId,
     },
   });
 
-
   if (userId !== property?.landlordId) {
     throw new AppError(
       httpStatus.UNAUTHORIZED,
-      "UNAUTHORIZED: You Have No Permission To Update This Property",
+      "UNAUTHORIZED:This Property is not Yours! You Have no Permission",
     );
   };
+
+    // Validate category if updating
+  if (payload.categoryId) {
+    const category = await prisma.category.findUnique({
+      where: {
+        id: payload.categoryId,
+      },
+    });
+
+    if (!category) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        "Category not found.",
+      );
+    }
+  }
 
   const result = await prisma.property.update({
     where: {
@@ -258,9 +283,27 @@ const updatePropertiesByIdIntoDB = async (
     data: {
       ...payload,
     },
+    include : {
+      landlord : {
+        select : {
+          id: true,
+          name: true,
+          email: true, 
+        }
+      },
+      category : {
+        select : {
+          id : true,
+          name : true
+        }
+      }
+    }
   });
 
-  return result;
+  return {
+    ...result,
+    price: Number(result.price)
+  };
 };
 
 export const propertiesService = {
