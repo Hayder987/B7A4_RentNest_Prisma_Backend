@@ -76,6 +76,12 @@ const createRentalRequestIntoDB = async (
           location: true,
           price: true,
           available: true,
+          landlord : {
+            select : {
+              name : true,
+              email : true
+            }
+          }
         },
       },
     },
