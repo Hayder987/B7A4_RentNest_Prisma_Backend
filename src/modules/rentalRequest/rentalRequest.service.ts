@@ -115,7 +115,7 @@ const getMyRentalRequestsFromDB = async (tenantId: string) => {
   return formattedRental;
 };
 
-// get rental request by id
+// get rental details request by id
 const getRentalDetailsFromDB = async (
   rentalId: string,
   userId: string,
@@ -181,7 +181,7 @@ const getRentalDetailsFromDB = async (
       httpStatus.FORBIDDEN,
       "FORBIDDEN: You are not authorized to access this rental request.",
     );
-  };
+  }
 
   return {
     ...rental,
@@ -190,11 +190,62 @@ const getRentalDetailsFromDB = async (
       price: Number(rental.property.price),
     },
   };
+};
 
+// landLord Services -------------->
+
+// get landlord all rental request
+const getLandlordRentalRequestsFromDB = async (landlordId: string) => {
+
+  const result = await prisma.rentalRequest.findMany({
+    where: {
+      property: {
+        landlordId,
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      tenant: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      property: {
+        select: {
+          id: true,
+          title: true,
+          location: true,
+          price: true,
+          image: true,
+          available: true,
+          category : {
+            select : {
+                name : true
+            }
+          }
+        },
+      },
+    },
+  });
+
+  const formattedResult = result.map((rental) => ({
+    ...rental,
+    property: {
+      ...rental.property,
+      price: Number(rental.property.price),
+    },
+  }));
+
+  return formattedResult;
 };
 
 export const rentalRequestServices = {
   createRentalRequestIntoDB,
   getMyRentalRequestsFromDB,
   getRentalDetailsFromDB,
+  getLandlordRentalRequestsFromDB,
 };
