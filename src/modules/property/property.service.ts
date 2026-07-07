@@ -395,6 +395,21 @@ const updateAvailabilityIntoDB = async (
   return result;
 };
 
+// Optional : get deleted properties by Admin
+const getDeletedPropertiesFromDB = async () => {
+  const data = await prisma.deletedProperty.findMany({
+    orderBy: {
+      deletedAt: "desc",
+    },
+  });
+  const total = await prisma.deletedProperty.count();
+  
+  return {
+    data,
+    total
+  }
+};
+
 export const propertiesService = {
   createPropertiesIntoDB,
   getAllPropertiesFromDB,
@@ -402,4 +417,5 @@ export const propertiesService = {
   updatePropertiesByIdIntoDB,
   deletePropertyByIdFromDB,
   updateAvailabilityIntoDB,
+  getDeletedPropertiesFromDB,
 };

@@ -20,6 +20,13 @@ router.post(
 
 router.get("/", propertiesController.getAllProperties);
 
+// Optional : get deleted properties by Admin
+router.get(
+  "/deleted_properties",
+  auth(Role.ADMIN),
+  propertiesController.getDeletedProperties,
+);
+
 router.get("/:id", propertiesController.getPropertiesById);
 
 router.patch(
@@ -42,5 +49,6 @@ router.patch(
   auth(Role.LANDLORD),
   propertiesController.updateAvailability,
 );
+
 
 export const propertiesRoutes = router;

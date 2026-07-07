@@ -121,6 +121,24 @@ const updateAvailability = catchAsync(
   },
 );
 
+// Optional : get deleted properties by Admin
+const getDeletedProperties = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) =>{
+
+    const results = await propertiesService.getDeletedPropertiesFromDB();
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "All Deleted Properties Retrieve successfully!",
+      data: results.data,
+      meta: {
+        total : results.total
+      }
+    });
+  }
+)
+
 export const propertiesController = {
   createProperties,
   getAllProperties,
@@ -128,4 +146,5 @@ export const propertiesController = {
   updatePropertyById,
   deletePropertyById,
   updateAvailability,
+  getDeletedProperties
 };

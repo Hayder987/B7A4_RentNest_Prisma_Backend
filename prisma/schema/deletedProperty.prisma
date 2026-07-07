@@ -7,4 +7,6 @@ model DeletedProperty {
     price Decimal @db.Decimal(10, 2)
     landlordId String
     categoryName String
+
+    deletedAt DateTime @default(now())
 }
