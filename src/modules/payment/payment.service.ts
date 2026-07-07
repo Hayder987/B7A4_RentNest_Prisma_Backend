@@ -6,7 +6,11 @@ import { ICreateCheckoutSession } from "./payment.interface";
 import { PaymentStatus, RentalStatus } from "../../../generated/prisma/enums";
 import { stripe } from "../../lib/stripe";
 import config from "../../config";
-import { handleCheckoutCompleted, handleCheckoutExpired, handlePaymentFailed } from "./payment.utils";
+import {
+  handleCheckoutCompleted,
+  handleCheckoutExpired,
+  handlePaymentFailed,
+} from "./payment.utils";
 
 // create checkout session
 const createCheckoutSessionIntoDB = async (
@@ -91,7 +95,6 @@ const createCheckoutSessionIntoDB = async (
   };
 };
 
-
 // handle webhook and get data
 const handleWebhook = async (payload: Buffer, signature: string) => {
   let event: Stripe.Event;
@@ -116,25 +119,72 @@ const handleWebhook = async (payload: Buffer, signature: string) => {
       );
       break;
 
-      case "checkout.session.expired":
-      await handleCheckoutExpired(
-        event.data.object as Stripe.Checkout.Session,
-      );
+    case "checkout.session.expired":
+      await handleCheckoutExpired(event.data.object as Stripe.Checkout.Session);
       break;
 
-      case "payment_intent.payment_failed":
-      await handlePaymentFailed(
-        event.data.object as Stripe.PaymentIntent,
-      );
+    case "payment_intent.payment_failed":
+      await handlePaymentFailed(event.data.object as Stripe.PaymentIntent);
       break;
 
-     default:
+    default:
       console.log(`Unhandled Stripe Event: ${event.type}`);
       break;
   }
 };
 
+// get my payment
+const getMyPaymentsFromDB = async (tenantId: string) => {
+  const result = await prisma.payment.findMany({
+    where: {
+      rentalRequest: {
+        tenantId,
+      },
+    },
+    orderBy: {
+      paidAt: "desc",
+    },
+    include: {
+      rentalRequest: {
+        select: {
+          id: true,
+          status: true,
+          property: {
+            select: {
+              id: true,
+              title: true,
+              location: true,
+              image: true,
+              price: true,
+              category: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const formattedResult = result.map((payment) => ({
+    ...payment,
+    amount: Number(payment.amount),
+    rentalRequest: {
+      ...payment.rentalRequest,
+      property: {
+        ...payment.rentalRequest.property,
+        price: Number(payment.rentalRequest.property.price),
+      },
+    },
+  }));
+
+  return formattedResult;
+};
+
 export const paymentService = {
   createCheckoutSessionIntoDB,
   handleWebhook,
+  getMyPaymentsFromDB,
 };
