@@ -57,6 +57,7 @@ const getPropertiesById = catchAsync(
   },
 );
 
+// update property by id
 const updatePropertyById = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const payload = req.body;
@@ -78,9 +79,27 @@ const updatePropertyById = catchAsync(
   },
 );
 
+// delete property by id
+const deletePropertyById = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) =>{
+    const userId = req.user?.id;
+    const propertyId = req.params.id;
+
+    const deletedProperty = await propertiesService.deletePropertyByIdFromDB(userId as string, propertyId as string);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.CREATED,
+      message: "This Property Deleted successfully!",
+      data: {deletedProperty},
+    });
+  }
+)
+
 export const propertiesController = {
   createProperties,
   getAllProperties,
   getPropertiesById,
   updatePropertyById,
+  deletePropertyById
 };

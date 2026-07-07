@@ -306,9 +306,41 @@ const updatePropertiesByIdIntoDB = async (
   };
 };
 
+// delete property by id
+const deletePropertyByIdFromDB = async (userId: string, propertyId:string) =>{
+   const property = await prisma.property.findUniqueOrThrow({
+    where : {
+      id : propertyId
+    },
+   });
+
+   if (userId !== property?.landlordId) {
+    throw new AppError(
+      httpStatus.UNAUTHORIZED,
+      "UNAUTHORIZED:This Property is not Yours! You Have no Permission",
+    );
+  };
+
+   const result = await prisma.property.delete({
+    where : {
+      id : propertyId
+    },
+    select : {
+      id: true,
+      title : true,
+      location : true,
+      price : true,
+      landlordId: true,
+      categoryId : true
+    }
+  });
+  return result;
+}
+
 export const propertiesService = {
   createPropertiesIntoDB,
   getAllPropertiesFromDB,
   getPropertiesByIdFromDB,
   updatePropertiesByIdIntoDB,
+  deletePropertyByIdFromDB,
 };
