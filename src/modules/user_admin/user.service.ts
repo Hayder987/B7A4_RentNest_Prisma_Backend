@@ -216,8 +216,25 @@ const getAllPropertiesFromDB = async (query: IGetPropertiesQuery) => {
     },
   });
 
+  const formattedProperties = properties.map((property) => ({
+    ...property,
+
+    price: Number(property.price),
+
+    rentals: property.rentals.map((rental) => ({
+      ...rental,
+
+      payment: rental.payment
+        ? {
+            ...rental.payment,
+            amount: Number(rental.payment.amount),
+          }
+        : null,
+    })),
+  }));
+
   return {
-    data: properties,
+    data: formattedProperties,
     meta: {
       page: page,
       limit: limit,
