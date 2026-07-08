@@ -1,9 +1,16 @@
 import httpStatus from "http-status";
 import { Role, UserStatus } from "../../../generated/prisma/enums";
-import { UserWhereInput } from "../../../generated/prisma/models";
+import {
+  PropertyWhereInput,
+  UserWhereInput,
+} from "../../../generated/prisma/models";
 import AppError from "../../Error/AppError";
 import { prisma } from "../../lib/prisma";
-import { IGetUsersQuery, IUpdateUserStatus } from "./user.interface";
+import {
+  IGetPropertiesQuery,
+  IGetUsersQuery,
+  IUpdateUserStatus,
+} from "./user.interface";
 
 // get all users from db
 const getAllUsersFromDB = async (query: IGetUsersQuery) => {
@@ -106,10 +113,122 @@ const updateUserStatus = async (userId: string, payload: IUpdateUserStatus) => {
     },
   });
 
-  return updatedUser
+  return updatedUser;
+};
+
+// get all properties
+const getAllPropertiesFromDB = async (query: IGetPropertiesQuery) => {
+  const page = query?.page ? Number(query.page) : 1;
+  const limit = query?.limit ? Number(query.limit) : 10;
+  const skip = (page - 1) * limit;
+
+  const andConditions: PropertyWhereInput[] = [];
+
+  if (query.searchTerm) {
+    andConditions.push({
+      OR: [
+        {
+          title: {
+            contains: query.searchTerm,
+            mode: "insensitive",
+          },
+        },
+        {
+          location: {
+            contains: query.searchTerm,
+            mode: "insensitive",
+          },
+        },
+      ],
+    });
+  }
+
+  if (query.categoryId) {
+    andConditions.push({
+      categoryId: query.categoryId,
+    });
+  }
+
+  if (query.available !== undefined) {
+    andConditions.push({
+      available: query.available === "true",
+    });
+  }
+
+  const properties = await prisma.property.findMany({
+    where: {
+      AND: andConditions,
+    },
+    take: limit,
+    skip: skip,
+
+    orderBy: {
+      createdAt: "desc",
+    },
+
+    include: {
+      landlord: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      category: {
+        select: {
+          name: true,
+        },
+      },
+      rentals: {
+        select: {
+          id: true,
+          status: true,
+          payment: {
+            select: {
+              id: true,
+              transactionId: true,
+              amount: true,
+              status: true,
+              paidAt: true,
+            },
+          },
+          review: {
+            select: {
+              id: true,
+              rating: true,
+              comment: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          rentals: true,
+          reviews: true,
+        },
+      },
+    },
+  });
+
+  const total = await prisma.property.count({
+    where: {
+      AND: andConditions,
+    },
+  });
+
+  return {
+    data: properties,
+    meta: {
+      page: page,
+      limit: limit,
+      total: total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 };
 
 export const adminUserService = {
   getAllUsersFromDB,
   updateUserStatus,
+  getAllPropertiesFromDB,
 };
