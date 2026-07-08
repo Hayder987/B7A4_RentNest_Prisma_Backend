@@ -12,6 +12,7 @@ import { propertiesRoutes } from "./modules/property/property.route";
 import { rentalRequestRoutes } from "./modules/rentalRequest/rentalRequest.route";
 import { landlordRoutes } from "./modules/rentalRequest/landlord.rental.route";
 import { reviewRoutes } from './modules/reviews/review.route';
+import { adminUserRoutes } from './modules/user_admin/user.route';
 
 
 const app:Application = express();
@@ -40,6 +41,7 @@ app.use("/api/rentals", rentalRequestRoutes);
 app.use("/api/landlord", landlordRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/admin", adminUserRoutes);
 
 // root route
 app.get("/", (re: Request, res: Response) => {
