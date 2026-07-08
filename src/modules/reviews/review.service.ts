@@ -1,8 +1,8 @@
-import httpStatus  from 'http-status';
+import httpStatus from "http-status";
 import { prisma } from "../../lib/prisma";
 import { ICreateReview } from "./review.interface";
-import AppError from '../../Error/AppError';
-import { PaymentStatus, RentalStatus } from '../../../generated/prisma/enums';
+import AppError from "../../Error/AppError";
+import { PaymentStatus, RentalStatus } from "../../../generated/prisma/enums";
 
 // create review
 const createReviewIntoDB = async (tenantId: string, payload: ICreateReview) => {
@@ -82,6 +82,46 @@ const createReviewIntoDB = async (tenantId: string, payload: ICreateReview) => {
   return review;
 };
 
+// get review by id
+const getReviewByIdIntoDB = async (reviewId: string) => {
+  const result = await prisma.review.findUnique({
+    where: {
+      id: reviewId,
+    },
+    include: {
+      tenant: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
+      rentalRequest: {
+        select: {
+          status: true,
+        },
+      },
+      property: {
+        select: {
+          title: true,
+          available: true,
+          category: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!result) {
+    throw new AppError(httpStatus.NOT_FOUND, "Review Not Found!");
+  }
+
+  return result;
+};
+
 export const reviewService = {
   createReviewIntoDB,
+  getReviewByIdIntoDB,
 };

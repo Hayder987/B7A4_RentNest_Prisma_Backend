@@ -125,7 +125,8 @@ const getMyRentalRequestsFromDB = async (tenantId: string) => {
         select : {
           id: true,
           rating : true,
-          comment : true
+          comment : true,
+          createdAt : true
         }
       }
     },
@@ -179,7 +180,8 @@ const getRentalDetailsFromDB = async (
             select : {
               id : true,
               rating : true,
-              comment : true
+              comment : true,
+              createdAt : true
             }
           }
         },

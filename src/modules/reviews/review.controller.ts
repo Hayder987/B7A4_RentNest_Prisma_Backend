@@ -17,6 +17,23 @@ const createReview = catchAsync(
   },
 );
 
+
+// get review by id
+const getReviewById = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) =>{
+
+    const review = await reviewService.getReviewByIdIntoDB(req.params?.id as string)
+   
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.CREATED,
+      message: "Review Retrieve successfully.",
+      data: {review},
+    });
+  }
+)
+
 export const reviewController = {
   createReview,
+  getReviewById
 };

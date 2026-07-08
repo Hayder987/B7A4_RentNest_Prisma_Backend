@@ -7,4 +7,7 @@ const router = Router();
 
 router.post("/", auth(Role.TENANT), reviewController.createReview);
 
+// optional: get review by id
+router.get("/:id", reviewController.getReviewById);
+
 export const reviewRoutes = router;
