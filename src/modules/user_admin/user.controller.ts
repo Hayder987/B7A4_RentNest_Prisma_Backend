@@ -44,13 +44,28 @@ const getAllProperties = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const result = await adminUserService.getAllPropertiesFromDB(req.query);
 
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: "All Properties retrieved successfully.",
-    meta: result?.meta,
-    data: result?.data,
-  });
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "All Properties retrieved successfully.",
+      meta: result?.meta,
+      data: result?.data,
+    });
+  },
+);
+
+// get all rental request
+const getAllRentalsRequest = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await adminUserService.getAllRentalsRequestFromDB(req.query);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "All Rental requests retrieved successfully.",
+      meta: result.meta,
+      data: result.data,
+    });
   },
 );
 
@@ -58,4 +73,5 @@ export const adminUserController = {
   getAllUsers,
   updateUserStatus,
   getAllProperties,
+  getAllRentalsRequest,
 };

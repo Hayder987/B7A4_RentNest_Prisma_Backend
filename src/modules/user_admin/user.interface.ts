@@ -18,4 +18,11 @@ export interface IGetPropertiesQuery {
   available?: string;
   page?: string;
   limit?: string;
+};
+
+export interface IGetRentalsQuery {
+  searchTerm?: string;
+  status?: string;
+  page?: string;
+  limit?: string;
 }

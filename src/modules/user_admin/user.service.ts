@@ -1,13 +1,15 @@
 import httpStatus from "http-status";
-import { Role, UserStatus } from "../../../generated/prisma/enums";
+import { RentalStatus, Role, UserStatus } from "../../../generated/prisma/enums";
 import {
   PropertyWhereInput,
+  RentalRequestWhereInput,
   UserWhereInput,
 } from "../../../generated/prisma/models";
 import AppError from "../../Error/AppError";
 import { prisma } from "../../lib/prisma";
 import {
   IGetPropertiesQuery,
+  IGetRentalsQuery,
   IGetUsersQuery,
   IUpdateUserStatus,
 } from "./user.interface";
@@ -244,8 +246,135 @@ const getAllPropertiesFromDB = async (query: IGetPropertiesQuery) => {
   };
 };
 
+// get all rental request
+const getAllRentalsRequestFromDB = async (query: IGetRentalsQuery) => {
+  const page = query?.page ? Number(query.page) : 1;
+  const limit = query?.limit ? Number(query.limit) : 10;
+  const skip = (page - 1) * limit;
+
+  const andConditions: RentalRequestWhereInput[] = [];
+
+   if (query.searchTerm) {
+    andConditions.push({
+      OR: [
+        {
+          tenant: {
+            name: {
+              contains: query.searchTerm,
+              mode: "insensitive",
+            },
+          },
+        },
+        {
+          tenant: {
+            email: {
+              contains: query.searchTerm,
+              mode: "insensitive",
+            },
+          },
+        },
+        {
+          property: {
+            title: {
+              contains: query.searchTerm,
+              mode: "insensitive",
+            },
+          },
+        },
+      ],
+    });
+  }
+
+    if (query.status) {
+    andConditions.push({
+      status: query.status as RentalStatus,
+    });
+  }
+
+  const rentals = await prisma.rentalRequest.findMany({
+    where: {
+      AND: andConditions,
+    },
+
+    take: limit,
+    skip : skip,
+
+    orderBy: {
+      createdAt: "desc",
+    },
+
+    include: {
+      tenant: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      property: {
+        select: {
+          id: true,
+          title: true,
+          location: true,
+          price: true,
+          image: true,
+        },
+      },
+      payment: {
+        select: {
+          id: true,
+          transactionId: true,
+          amount: true,
+          status: true,
+          paidAt: true,
+        },
+      },
+      review: {
+        select: {
+          id: true,
+          rating: true,
+          comment: true,
+        },
+      },
+    },
+  });
+
+    const formattedRentals = rentals.map((rental) => ({
+    ...rental,
+
+    property: {
+      ...rental.property,
+      price: Number(rental.property.price),
+    },
+
+    payment: rental.payment
+      ? {
+          ...rental.payment,
+          amount: Number(rental.payment.amount),
+        }
+      : null,
+  }));
+
+  const total = await prisma.rentalRequest.count({
+    where: {
+      AND: andConditions,
+    },
+  });
+
+  return {
+    data: formattedRentals,
+    meta: {
+      page: page,
+      limit: limit,
+      total: total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
 export const adminUserService = {
   getAllUsersFromDB,
   updateUserStatus,
   getAllPropertiesFromDB,
+  getAllRentalsRequestFromDB,
 };
