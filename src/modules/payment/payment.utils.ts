@@ -9,7 +9,6 @@ export const handleCheckoutCompleted = async (
 ) => {
   const rentalRequestId = session.metadata?.rentalRequestId;
 
-  console.log("payment utils", session)
 
   if (!rentalRequestId) {
     throw new AppError(

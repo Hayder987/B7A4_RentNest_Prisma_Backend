@@ -76,12 +76,12 @@ const createRentalRequestIntoDB = async (
           location: true,
           price: true,
           available: true,
-          landlord : {
-            select : {
-              name : true,
-              email : true
-            }
-          }
+          landlord: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
         },
       },
     },
@@ -266,7 +266,6 @@ const updateRentalRequestStatusIntoDB = async (
     },
   });
 
- 
   if (!rentalRequest) {
     throw new AppError(httpStatus.NOT_FOUND, "Rental request not found.");
   }
@@ -323,10 +322,55 @@ const updateRentalRequestStatusIntoDB = async (
   };
 };
 
+//Optional: rental status Completed Request update after payment
+const updateCompletedRentalStatusIntoDB = async (
+  landlordId: string,
+  rentalId: string,
+) => {
+  const rental = await prisma.rentalRequest.findUnique({
+    where: {
+      id: rentalId,
+    },
+    include: {
+      property: true,
+    },
+  });
+
+  if (!rental) {
+    throw new AppError(httpStatus.NOT_FOUND, "Rental request not found.");
+  }
+
+  if (rental.property.landlordId !== landlordId) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "You are not authorized to complete this rental.",
+    );
+  }
+
+  if (rental.status !== RentalStatus.ACTIVE) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Only active rentals can be marked as completed.",
+    );
+  }
+
+  const updatedRental = await prisma.rentalRequest.update({
+    where: {
+      id: rentalId,
+    },
+    data: {
+      status: RentalStatus.COMPLETED,
+    },
+  });
+
+  return updatedRental;
+};
+
 export const rentalRequestServices = {
   createRentalRequestIntoDB,
   getMyRentalRequestsFromDB,
   getRentalDetailsFromDB,
   getLandlordRentalRequestsFromDB,
   updateRentalRequestStatusIntoDB,
+  updateCompletedRentalStatusIntoDB,
 };

@@ -64,12 +64,11 @@ const getRentalDetails = catchAsync(
   },
 );
 
-
 // landlord Rental controller --------------------->
 
 // get landlord rental request
 const getLandlordRentalRequests = catchAsync(
-  async (req:Request, res:Response, next:NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const landlordId = req.user?.id;
 
     const result = await rentalRequestServices.getLandlordRentalRequestsFromDB(
@@ -87,17 +86,16 @@ const getLandlordRentalRequests = catchAsync(
 
 // rental status Approve / Reject Request update
 const updateRentalRequestStatus = catchAsync(
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const rentalRequestId = req.params.id;
     const landlordId = req.user?.id;
     const payload = req.body;
 
-    const result =
-      await rentalRequestServices.updateRentalRequestStatusIntoDB(
-        rentalRequestId as string,
-        landlordId as string,
-        payload,
-      );
+    const result = await rentalRequestServices.updateRentalRequestStatusIntoDB(
+      rentalRequestId as string,
+      landlordId as string,
+      payload,
+    );
 
     sendResponse(res, {
       success: true,
@@ -108,11 +106,32 @@ const updateRentalRequestStatus = catchAsync(
   },
 );
 
+//Optional:rental status Completed Request update after payment
+const updateCompletedRentalStatus = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const landlordId = req.user?.id;
+    const rentalId = req.params.id;
+
+    const result =
+      await rentalRequestServices.updateCompletedRentalStatusIntoDB(
+        landlordId as string,
+        rentalId as string,
+      );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Rental marked as completed successfully.",
+      data: result,
+    });
+  },
+);
 
 export const rentalRequestController = {
   postRentalRequest,
   getMyRentalRequests,
   getRentalDetails,
   getLandlordRentalRequests,
-  updateRentalRequestStatus
+  updateRentalRequestStatus,
+  updateCompletedRentalStatus,
 };

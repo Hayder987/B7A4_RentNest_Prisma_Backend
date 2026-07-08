@@ -13,11 +13,19 @@ router.get(
   rentalRequestController.getLandlordRentalRequests,
 );
 
+
 router.patch(
   "/requests/:id",
   auth(Role.LANDLORD),
   validateRequest(updateRentalRequestStatusValidationSchema),
   rentalRequestController.updateRentalRequestStatus,
+);
+
+// Optional: update rental status to completed
+router.patch(
+  "/rentals/:id/complete",
+  auth(Role.LANDLORD),
+  rentalRequestController.updateCompletedRentalStatus
 );
 
 export const landlordRoutes = router;
