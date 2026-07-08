@@ -2,12 +2,14 @@ import httpStatus from "http-status";
 import Stripe from "stripe";
 import AppError from "../../Error/AppError";
 import { prisma } from "../../lib/prisma";
-import { PaymentStatus, RentalStatus } from "../../../generated/prisma/enums";
+import { PaymentMethod, PaymentProvider, PaymentStatus, RentalStatus } from "../../../generated/prisma/enums";
 
 export const handleCheckoutCompleted = async (
   session: Stripe.Checkout.Session,
 ) => {
   const rentalRequestId = session.metadata?.rentalRequestId;
+
+  console.log("payment utils", session)
 
   if (!rentalRequestId) {
     throw new AppError(
@@ -40,7 +42,9 @@ export const handleCheckoutCompleted = async (
     await tx.payment.create({
       data: {
         rentalRequestId,
-
+        provider : PaymentProvider.STRIPE,
+        method : PaymentMethod.CARD,
+        sessionId: session?.id,
         transactionId:
           typeof session.payment_intent === "string"
             ? session.payment_intent

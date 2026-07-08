@@ -22,3 +22,16 @@ enum PaymentStatus {
   PAID
   FAILED
 }
+
+enum PaymentProvider {
+STRIPE
+SSLCOMMERZ
+}
+
+enum PaymentMethod {
+CARD
+BKASH
+NAGAD
+ROCKET
+BANK
+}

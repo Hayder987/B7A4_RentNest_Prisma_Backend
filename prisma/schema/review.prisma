@@ -9,11 +9,15 @@ model Review {
 
   propertyId String
 
+  rentalRequestId String @unique
+
   createdAt DateTime @default(now())
 
-  tenant User @relation(fields: [tenantId],references: [id])
+  tenant User @relation(fields: [tenantId], references: [id])
 
   property Property @relation(fields: [propertyId], references: [id],onDelete: Cascade)
+
+  rentalRequest RentalRequest @relation(fields: [rentalRequestId], references: [id],onDelete: Cascade)
 
   @@map("reviews")
 }
