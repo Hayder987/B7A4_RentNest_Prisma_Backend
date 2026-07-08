@@ -1,7 +1,9 @@
+import httpStatus from "http-status";
 import { Role, UserStatus } from "../../../generated/prisma/enums";
 import { UserWhereInput } from "../../../generated/prisma/models";
+import AppError from "../../Error/AppError";
 import { prisma } from "../../lib/prisma";
-import { IGetUsersQuery } from "./user.interface";
+import { IGetUsersQuery, IUpdateUserStatus } from "./user.interface";
 
 // get all users from db
 const getAllUsersFromDB = async (query: IGetUsersQuery) => {
@@ -73,6 +75,41 @@ const getAllUsersFromDB = async (query: IGetUsersQuery) => {
   };
 };
 
+// Block / Unblock User by admin
+const updateUserStatus = async (userId: string, payload: IUpdateUserStatus) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, "User not found.");
+  }
+
+  if (user.status === payload.status) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `User is already ${payload.status}.`,
+    );
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      status: payload.status,
+    },
+    omit: {
+      password: true,
+    },
+  });
+
+  return updatedUser
+};
+
 export const adminUserService = {
   getAllUsersFromDB,
+  updateUserStatus,
 };
