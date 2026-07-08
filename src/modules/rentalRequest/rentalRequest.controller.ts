@@ -120,7 +120,7 @@ const updateCompletedRentalStatus = catchAsync(
 
     sendResponse(res, {
       success: true,
-      statusCode: httpStatus.OK,
+      statusCode: httpStatus.CREATED,
       message: "Rental marked as completed successfully.",
       data: result,
     });

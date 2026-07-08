@@ -108,8 +108,26 @@ const getMyRentalRequestsFromDB = async (tenantId: string) => {
           price: true,
           available: true,
           image: true,
+          landlord : {
+            select : {
+              name : true,
+              email : true
+            }
+          },
+          category : {
+            select : {
+              name : true
+            }
+          }
         },
       },
+      review : {
+        select : {
+          id: true,
+          rating : true,
+          comment : true
+        }
+      }
     },
   });
 
@@ -157,6 +175,13 @@ const getRentalDetailsFromDB = async (
               name: true,
             },
           },
+          reviews : {
+            select : {
+              id : true,
+              rating : true,
+              comment : true
+            }
+          }
         },
       },
       payment: true,
