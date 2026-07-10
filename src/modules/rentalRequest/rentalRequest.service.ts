@@ -301,7 +301,7 @@ const updateRentalRequestStatusIntoDB = async (
   if (rentalRequest?.property?.landlordId !== landlordId) {
     throw new AppError(
       httpStatus.FORBIDDEN,
-      "FORBIDDEN: You are not authorized to update this rental request.",
+      "FORBIDDEN: You are not authorized to update and this is not your rental request.",
     );
   }
 
