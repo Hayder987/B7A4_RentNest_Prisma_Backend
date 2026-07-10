@@ -313,6 +313,13 @@ const updateRentalRequestStatusIntoDB = async (
     );
   }
 
+  if(!rentalRequest?.property?.available){
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      " This property Already Rented You can't Update",
+    );
+  }
+
   const result = await prisma.rentalRequest.update({
     where: {
       id: rentalRequestId,
