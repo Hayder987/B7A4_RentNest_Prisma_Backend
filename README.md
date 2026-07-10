@@ -701,6 +701,7 @@ The payment process follows these steps:
 
 ---
 
+
 ## Payment Sequence Diagram
 
 ```mermaid
